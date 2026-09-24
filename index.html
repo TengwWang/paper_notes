@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Teng Wang 的科研文献笔记库">
+  <title>Paper Notes · Teng Wang</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">TENG WANG · RESEARCH LIBRARY</div>
+      <h1>Paper Notes</h1>
+      <p class="lead">以 Figure 为主线的科研文献笔记库。重点关注 Single-cell、Foundation Models、Perturbation 与 Virtual Cell。</p>
+      <div class="stats">
+        <span><b id="paper-count">—</b> papers</span>
+        <span><b id="tag-count">—</b> tags</span>
+        <span><b id="year-count">—</b> years</span>
+      </div>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="toolbar">
+      <label class="search-box"><span>Search</span><input id="search" type="search" placeholder="标题、模型、标签、关键词…"></label>
+      <label><span>Year</span><select id="year-filter"><option value="">All years</option></select></label>
+      <label><span>Sort</span><select id="sort"><option value="updated">Recently updated</option><option value="year-desc">Year ↓</option><option value="year-asc">Year ↑</option><option value="title">Title A–Z</option></select></label>
+    </section>
+    <section>
+      <div class="section-head"><div><div class="kicker">TOPICS</div><h2>Browse by tag</h2></div><button id="clear-tags" class="quiet-button" type="button">Clear filters</button></div>
+      <div id="tag-list" class="tags"></div>
+    </section>
+    <section class="library">
+      <div class="section-head"><div><div class="kicker">LIBRARY</div><h2>All papers</h2></div><div id="result-count" class="result-count"></div></div>
+      <div id="paper-list" class="paper-grid"></div>
+      <div id="empty" class="empty" hidden>没有匹配的论文。</div>
+    </section>
+  </main>
+  <footer><div>Paper Notes · GitHub Pages</div><div><a href="papers.json">papers.json</a> · <a href="skills/figure-first-paper-html/SKILL.md">Figure-first Skill</a></div></footer>
+  <script src="app.js"></script>
+</body>
+</html>
