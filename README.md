@@ -12,8 +12,4 @@ Figure-first scientific paper notes hosted with GitHub Pages.
 - `papers/stack/index.html`: Stack paper note
 - `papers/stack/metadata.json`: Stack metadata
 - `skills/figure-first-paper-html/SKILL.md`: reusable Figure-first paper skill
-
-
-## Site
-
 - TengwWang.github.io/paper_notes
