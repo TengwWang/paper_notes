@@ -11,7 +11,7 @@ Create a paper-reading HTML whose primary unit is:
 
 `paragraph summary -> cited figure panel(s) -> full Chinese translation of that paragraph -> next paragraph`
 
-The page must preserve the paper's original section order while making figures, model architecture, and methods easier to understand.
+The page must preserve the paper's original section order while making figures, model architecture, equations, and methods easier to understand.
 
 Default explanatory language: **Chinese**. Keep useful English model names, dataset names, metrics, genes, equations, and original section headings.
 
@@ -19,10 +19,11 @@ Default explanatory language: **Chinese**. Keep useful English model names, data
 
 ## 1. Source and version rules
 
-1. The supplied PDF is authoritative for section order, paragraph boundaries, figure citations, panel labels, captions, tables, Methods, and Supplementary material.
+1. The supplied PDF is authoritative for section order, paragraph boundaries, figure citations, panel labels, captions, tables, Methods, equations, and Supplementary material.
 2. Lock the exact version before processing. Never mix content from another version unless explicitly requested.
-3. Render the PDF and visually inspect figure pages. Parsed text is useful for text extraction, but rendered pages are authoritative for figures and layout.
+3. Render the PDF and visually inspect figure pages. Parsed text is useful for text extraction, but rendered pages are authoritative for figures, equations, and layout.
 4. Do not replace inaccessible or difficult figures with third-party screenshots. If a panel cannot be safely extracted, label the missing slot explicitly rather than presenting a redraw as the original.
+5. Determine the paper's DOI and/or canonical source URL from the paper itself or a reliable source. **Never guess a DOI.**
 
 ---
 
@@ -31,12 +32,17 @@ Default explanatory language: **Chinese**. Keep useful English model names, data
 The HTML begins with:
 
 - title, authors, version/date;
+- a clearly visible **original-paper link** placed near the title:
+  - prefer the canonical DOI URL, e.g. `https://doi.org/<doi>`;
+  - if no DOI is available, use the journal / publisher / bioRxiv / arXiv / official paper URL;
+  - if both DOI and a useful preprint/full-text link are available, both may be shown;
+  - the link must be directly clickable with a normal `<a href="...">` element and open the original paper;
 - **one-sentence whole-paper summary**;
 - 4-6 concise key points;
 - **Abstract summary**;
 - an expandable **complete Chinese translation of the Abstract**.
 
-Do not omit the Abstract.
+Do not omit the Abstract or the original-paper link.
 
 ---
 
@@ -104,7 +110,8 @@ Preserve:
 - comparison groups;
 - uncertainty/caveats;
 - author framing;
-- figure/table references when useful.
+- figure/table references when useful;
+- equations and mathematical symbols.
 
 Do not silently add conclusions that are absent from the PDF.
 
@@ -123,6 +130,17 @@ Crop rules:
 3. if panel boundaries overlap, **prefer a complete target panel even if a small amount of a neighboring panel remains**;
 4. never clip scientifically meaningful labels merely to produce a cleaner rectangular crop;
 5. visually verify crops against the rendered PDF.
+
+### Panel preview size
+
+**Hard rule: reduce the inline panel height cap to 60% of the previous/current template value.**
+
+- Apply this to both main and supplementary panel previews.
+- Preserve aspect ratio with `width: auto` / `height: auto` and `object-fit: contain` as appropriate.
+- The smaller inline preview must **not** crop the source panel.
+- Click-to-enlarge must still expose the full-resolution panel.
+- When modifying an existing template, explicitly multiply its previous panel `max-height` by `0.6`; do not merely reduce width or visually approximate the change.
+- Keep very wide plots readable by allowing width to expand within the content column while respecting the reduced height cap.
 
 ### Main figures
 
@@ -144,17 +162,36 @@ Avoid UI/layout narration such as:
 
 ### Supplementary figures
 
-**Every supplementary figure/panel must be collapsible as a whole.**
+**Every supplementary figure group must be collapsible as a whole. Do not create one disclosure button for every individual panel when panels occur consecutively.**
 
-Recommended:
+Grouping rules:
+
+1. If multiple supplementary panels are cited consecutively at the same reading position, place them under **one shared `<details>` toggle**.
+2. Consecutive panels from the same supplementary figure (for example Fig. S7A-S7D) should normally form one group.
+3. If panels from multiple supplementary figures occur as one uninterrupted supplementary block, they may share one disclosure group when that improves readability; retain each panel's own ID/title inside the group.
+4. Start a new supplementary disclosure group when the reading stream is interrupted by a main figure, a substantially different discussion block, or a new non-contiguous supplementary citation context.
+
+Inside an expanded supplementary group, use a **two-column grid** on desktop:
 
 ```html
-<details class="supp-panel">
-  <summary>Fig. S7A · ...</summary>
-  <img ...>
-  <p>...</p>
+<details class="supp-group">
+  <summary>Supplementary figures · Fig. S7A-S7D</summary>
+  <div class="supp-grid">
+    <figure>...</figure>
+    <figure>...</figure>
+    <figure>...</figure>
+    <figure>...</figure>
+  </div>
 </details>
 ```
+
+Recommended behavior:
+
+- desktop/tablet: 2 columns;
+- narrow mobile screens: collapse responsively to 1 column;
+- preserve source order left-to-right, then top-to-bottom;
+- an odd final panel may occupy one grid cell; do not stretch it in a way that distorts the image;
+- every panel still carries its own panel ID, short title, image, and concise scientific description.
 
 ### Click-to-enlarge
 
@@ -207,7 +244,8 @@ Explicitly resolve likely confusions, for example:
 When a Results paragraph introduces architecture/training/post-training, immediately after the corresponding architecture figure insert:
 
 1. a clear model explainer;
-2. a collapsible **complete Chinese translation of the corresponding Methods subsection(s)**.
+2. a collapsible **complete Chinese translation of the corresponding Methods subsection(s)**;
+3. any important equations from those Methods rendered as readable mathematical notation, following Section 7.
 
 Example:
 
@@ -223,14 +261,111 @@ Do not merely say “see Methods”.
 
 ## 7. Methods section at the bottom
 
-Retain the original Methods hierarchy.
+The bottom Methods section must be a **detailed technical reference**, not a compressed appendix.
 
-For every Methods subsection:
+Retain the original Methods hierarchy and ordering.
 
-- visible concise Chinese summary;
-- expandable **complete Chinese translation of that subsection**.
+For every Methods subsection include:
 
-Do this even if the same section was backfilled earlier beside a model figure. The bottom Methods section acts as a complete hierarchical reference.
+1. a visible Chinese summary;
+2. a **detailed Chinese explanation** sufficient to understand or reproduce the procedure, when supported by the paper;
+3. an expandable **complete Chinese translation of that subsection**;
+4. all important equations rendered as readable math rather than raw code.
+
+### Methods detail standard
+
+For computational / ML sections, explicitly capture as applicable:
+
+- inputs and outputs;
+- preprocessing and normalization;
+- filtering / QC criteria;
+- tokenization or feature construction;
+- model components and data flow;
+- tensor dimensions and axes when stated or inferable with confidence;
+- loss terms and their role;
+- sampling / masking / corruption process;
+- optimization method, learning rate, schedules, batch sizes, epochs/steps;
+- regularization;
+- initialization;
+- training / validation split;
+- inference or generation procedure;
+- post-training / fine-tuning / alignment stages;
+- baselines;
+- evaluation metrics;
+- statistical tests;
+- important hyperparameters and implementation details.
+
+For wet-lab / experimental sections, capture as applicable:
+
+- sample source and cohort definition;
+- inclusion/exclusion criteria;
+- experimental design;
+- perturbation / treatment conditions;
+- timing / dose;
+- library preparation;
+- sequencing / assay platform;
+- preprocessing and QC;
+- replicate structure;
+- statistical analysis.
+
+Do not invent missing details. Clearly indicate when a detail is not specified by the paper.
+
+### Equation rendering — hard requirement
+
+**Equations must never be left as raw Markdown/LaTeX code, escaped text, or code-block syntax in the final reader-facing HTML.**
+
+Use MathJax or KaTeX (or an equivalent reliable math renderer) and convert equations into proper inline/display math.
+
+Acceptable source forms may include:
+
+- `$ ... $`
+- `$$ ... $$`
+- `\\( ... \\)`
+- `\\[ ... \\]`
+- raw extracted TeX such as `\\frac{a}{b}`, `\\sum_i`, `\\mathcal{L}`
+
+but the final HTML must display them as typeset mathematics.
+
+Required equation behavior:
+
+1. **Inline equations** remain inline with prose.
+2. **Display equations** are centered and visually separated from surrounding text.
+3. Preserve original equation numbering when present.
+4. Repair extraction artifacts such as broken backslashes, split subscripts/superscripts, malformed braces, Unicode-minus substitutions, and equations accidentally placed inside backticks/code fences.
+5. Use proper structures for multi-line equations, e.g. `aligned`, `cases`, matrices, fractions, sums, expectations, norms, and integrals.
+6. Immediately after an important equation, explain the symbols/terms in concise Chinese when the paper defines them or when needed for comprehension.
+7. For composite objectives, explain what each loss term optimizes and how weighting coefficients enter.
+8. Verify every rendered formula against the PDF image; parsed text alone is not sufficient for equations.
+9. Never show formulas in a monospace code style merely because the source extraction returned TeX.
+10. If a formula cannot be reconstructed confidently, show the rendered PDF crop of that equation and explicitly mark the transcription as uncertain rather than silently guessing.
+
+Recommended MathJax example:
+
+```html
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']]
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+```
+
+Then write formulas as actual math delimiters, for example:
+
+```html
+<div class="equation">
+  \\[
+  \\mathcal{L}
+  = \\mathcal{L}_{\\mathrm{recon}}
+  + \\lambda \\mathcal{L}_{\\mathrm{reg}}
+  \\]
+</div>
+```
+
+The user-facing browser must display the equation itself, **not the TeX source characters**.
 
 Tables that are essential to a cited paragraph may also be shown as collapsible blocks at the citing location.
 
@@ -243,8 +378,11 @@ Recommended:
 - neutral paper-like theme;
 - sticky table of contents on desktop;
 - responsive single-column mobile layout;
-- native `<details>` for translations and supplements;
-- no heavy JavaScript dependency;
+- native `<details>` for translations and supplementary groups;
+- supplementary panel grid: two columns on desktop, one column on narrow mobile;
+- reduced inline panel height cap per Section 5;
+- MathJax/KaTeX support for readable equations;
+- no heavy JavaScript dependency beyond what is needed for lightbox/math rendering;
 - self-contained HTML when practical;
 - actual panel assets also retained separately in the delivery package.
 
@@ -275,6 +413,17 @@ Build an IR where each paragraph owns its downstream content:
 }
 ```
 
+Supplementary groups should be represented explicitly when panels are consecutive:
+
+```json
+{
+  "type": "supplementary_group",
+  "ids": ["FigS7A", "FigS7B", "FigS7C", "FigS7D"],
+  "layout": "two-column",
+  "collapsible": true
+}
+```
+
 Generate the HTML deterministically as:
 
 `paragraph summary -> paragraph.after -> paragraph translation -> next paragraph`
@@ -287,10 +436,15 @@ or, when an architecture explainer is conceptually clearer:
 
 ## 10. Quality-control checklist
 
-### Content
+### Source / opening
 
 - [ ] Exact requested paper version is locked.
+- [ ] DOI and/or canonical original-paper URL is verified.
+- [ ] A directly clickable original-paper link appears near the title.
 - [ ] Abstract has summary + full translation.
+
+### Content
+
 - [ ] Original hierarchy is preserved.
 - [ ] Every prose paragraph has a one-sentence summary.
 - [ ] Every prose paragraph has a full Chinese translation.
@@ -301,10 +455,13 @@ or, when an architecture explainer is conceptually clearer:
 
 - [ ] Every cited main figure is represented.
 - [ ] Cited supplementary panels are represented at first citation.
-- [ ] Supplementary panels are fully collapsible.
+- [ ] Inline panel height cap is exactly 60% of the previous/current template cap.
+- [ ] Smaller previews do not crop source content.
+- [ ] Consecutive supplementary panels share one disclosure toggle rather than one toggle per panel.
+- [ ] Supplementary groups use a two-column desktop grid and responsive one-column mobile layout.
 - [ ] Panel labels / axes / legends are not clipped.
 - [ ] Shared or overlapping layouts prioritize complete target panels.
-- [ ] Every image is click-to-enlarge.
+- [ ] Every image is click-to-enlarge at full resolution.
 
 ### ML / FM papers
 
@@ -316,10 +473,16 @@ or, when an architecture explainer is conceptually clearer:
 - [ ] Diffusion / flow-matching terminology is interpreted precisely.
 - [ ] Relevant Methods sections are fully translated beside the architecture discussion.
 
-### Methods
+### Methods / equations
 
 - [ ] Bottom Methods retains original hierarchy.
-- [ ] Every Methods subsection has summary + full translation.
+- [ ] Every Methods subsection has summary + detailed explanation + full translation.
+- [ ] Reproducibility-critical parameters are retained.
+- [ ] Important equations are rendered with MathJax/KaTeX or equivalent.
+- [ ] No equation remains as raw TeX, backticked code, or monospace code-block text.
+- [ ] Equation numbers are preserved when present.
+- [ ] Important equation symbols / terms are explained.
+- [ ] Every reconstructed equation is visually verified against the PDF.
 
 ### Reader-facing cleanup
 
