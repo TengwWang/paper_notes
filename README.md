@@ -16,4 +16,4 @@ Figure-first scientific paper notes hosted with GitHub Pages.
 
 ## Site
 
-- TengwWang.github.io/paper_notes/
+- TengwWang.github.io/paper_notes
