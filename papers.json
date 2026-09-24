@@ -1,0 +1,21 @@
+[
+  {
+    "slug": "stack",
+    "title": "Stack: In-Context Learning of Single-Cell Biology",
+    "short_title": "Stack",
+    "authors": "Mingze Dong et al.",
+    "year": 2026,
+    "venue": "bioRxiv",
+    "doi": "10.64898/2026.01.09.698608",
+    "paper_version": "v1",
+    "posted_date": "2026-01-09",
+    "date_added": "2026-09-24",
+    "updated_at": "2026-09-24",
+    "language": "zh-CN",
+    "tags": ["Single-cell","Foundation Model","In-Context Learning","Perturbation","Generative Model"],
+    "topics": ["cellular context","gene-module token","tabular attention","post-training","masked-diffusion-like generation","Perturb Sapiens"],
+    "summary": "Stack 利用 cellular context 与 cell prompting，在无需针对目标数据集微调的情况下执行单细胞 zero-shot 表征与条件生成。",
+    "url": "papers/stack/",
+    "skill": "skills/figure-first-paper-html/SKILL.md"
+  }
+]
